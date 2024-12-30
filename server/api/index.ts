@@ -55,6 +55,10 @@ const upload = multer({
   }
 });
 
+app.get('/', (req: Request, res: Response): void => {
+  res.send('Hello World!');
+})
+
 // Route to upload a file
 app.post(
   '/upload',
