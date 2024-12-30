@@ -91,4 +91,5 @@ app.get('/files', (req: Request, res: Response, next: NextFunction): void => {
   }
 });
 
-module.exports = app;
+// Export the app as a serverless function
+export default app;
