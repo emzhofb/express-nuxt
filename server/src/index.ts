@@ -91,7 +91,4 @@ app.get('/files', (req: Request, res: Response, next: NextFunction): void => {
   }
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+module.exports = app;
