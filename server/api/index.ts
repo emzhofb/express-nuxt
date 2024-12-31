@@ -1,26 +1,24 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const path = require('path');
-const fs = require('fs');
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+import helmet from 'helmet'; // Helmet for setting security-related HTTP headers
 
-const port = 5000;
+// Initialize Express app
 const app = express();
+const port = 5000;
 
-// Middleware
+// Enable CORS for frontend communication
 app.use(cors());
+
+// Use Helmet to set secure HTTP headers to mitigate XSS, clickjacking, and other attacks
 app.use(helmet());
 
-// Ensure the "uploads" directory exists
-const uploadsDir = path.resolve(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-	fs.mkdirSync(uploadsDir);
-}
-
-app.get('/', function (req, res) {
-	res.send('Hello World!');
+app.get('/', (req: Request, res: Response) => {
+    res.send('Hello, World!');
 });
 
-app.listen(port, () => console.log('Server ready on port', port));
+// Start the server
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+});
 
-module.exports = app;
+export default app;
