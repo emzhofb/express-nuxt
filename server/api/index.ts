@@ -1,104 +1,112 @@
-import express, { Request, Response, NextFunction } from 'express';
-import multer from 'multer';
-import cors from 'cors';
-import path from 'path';
-import fs from 'fs';
-import helmet from 'helmet'; // Helmet for setting security-related HTTP headers
+require('dotenv').config();
 
-// Initialize Express app
+const express = require('express');
 const app = express();
-const port = 5000;
-const delimiter = ' :v-|-:v ';
+const { sql } = require('@vercel/postgres');
 
-// Enable CORS for frontend communication
-app.use(cors());
+const bodyParser = require('body-parser');
+const path = require('path');
 
-// Use Helmet to set secure HTTP headers to mitigate XSS, clickjacking, and other attacks
-app.use(helmet());
+// Create application/x-www-form-urlencoded parser
+const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
-// Ensure the "uploads" directory exists
-const uploadsDir = path.resolve(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
+app.use(express.static('public'));
 
-// Serve static files from the "uploads" directory
-app.use('/uploads', express.static(uploadsDir)); // This line allows you to access files in the uploads directory
-
-// File upload setup
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    // Generate the filename: original name + timestamp (or ID) to avoid collisions
-    const originalNameWithoutExt = path.parse(file.originalname).name; // Get the original filename without the extension
-    const fileId = Date.now(); // Or generate a random ID, e.g., `Math.random().toString(36).substring(7)`
-    const extension = path.extname(file.originalname); // Get the file extension
-    const newFileName = `${originalNameWithoutExt}${delimiter}${fileId}${extension}`; // Combine original name and ID
-    cb(null, newFileName);
-  },
+app.get('/', function (req, res) {
+	res.sendFile(path.join(__dirname, '..', 'components', 'home.htm'));
 });
 
-const upload = multer({ 
-  storage, 
-  // OWASP: Prevent Large File Uploads, limit file size
-  limits: { fileSize: 10 * 1024 * 1024 }, // Limit files to 10MB
-  // OWASP: Validate file types to avoid unwanted files (e.g., .exe, .html, etc.)
-  fileFilter: (req, file, cb) => {
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
-    if (allowedMimeTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(null, false);
-    }
-  }
+app.get('/about', function (req, res) {
+	res.sendFile(path.join(__dirname, '..', 'components', 'about.htm'));
 });
 
-app.get('/', (req: Request, res: Response): void => {
-  res.send('Hello World!');
-})
-
-// Route to upload a file
-app.post(
-  '/upload',
-  upload.single('file'),
-  (req: Request, res: Response, next: NextFunction): void => {
-    try {
-      if (!req.file) {
-        res.status(400).json({ error: 'No file uploaded.' });
-        return;
-      }
-      // OWASP: Log file upload success (a logging system can be added here for production)
-      console.log(`File uploaded: ${req.file.filename}`);
-      res.status(200).json({ filename: req.file.filename });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-// Route to list uploaded files
-app.get('/files', (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    fs.readdir(uploadsDir, (err, files) => {
-      if (err) {
-        res.status(500).json({ error: 'Unable to scan files.' });
-        return;
-      }
-
-      const fileList = files.map(file => ({ id: file.split(delimiter)[1], filename: file.split(delimiter)[0], path: `/uploads/${file}` }));
-      res.status(200).json(fileList);
-    });
-  } catch (error) {
-    next(error);
-  }
+app.get('/uploadUser', function (req, res) {
+	res.sendFile(path.join(__dirname, '..', 'components', 'user_upload_form.htm'));
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+app.post('/uploadSuccessful', urlencodedParser, async (req, res) => {
+	try {
+		await sql`INSERT INTO Users (Id, Name, Email) VALUES (${req.body.user_id}, ${req.body.name}, ${req.body.email});`;
+		res.status(200).send('<h1>User added successfully</h1>');
+	} catch (error) {
+		console.error(error);
+		res.status(500).send('Error adding user');
+	}
 });
 
-// Export the app as a serverless function
-export default app;
+app.get('/allUsers', async (req, res) => {
+	try {
+		const users = await sql`SELECT * FROM Users;`;
+		if (users && users.rows.length > 0) {
+			let tableContent = users.rows
+				.map(
+					(user) =>
+						`<tr>
+                        <td>${user.id}</td>
+                        <td>${user.name}</td>
+                        <td>${user.email}</td>
+                    </tr>`
+				)
+				.join('');
+
+			res.status(200).send(`
+                <html>
+                    <head>
+                        <title>Users</title>
+                        <style>
+                            body {
+                                font-family: Arial, sans-serif;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-bottom: 15px;
+                            }
+                            th, td {
+                                border: 1px solid #ddd;
+                                padding: 8px;
+                                text-align: left;
+                            }
+                            th {
+                                background-color: #f2f2f2;
+                            }
+                            a {
+                                text-decoration: none;
+                                color: #0a16f7;
+                                margin: 15px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>Users</h1>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableContent}
+                            </tbody>
+                        </table>
+                        <div>
+                            <a href="/">Home</a>
+                            <a href="/uploadUser">Add User</a>
+                        </div>
+                    </body>
+                </html>
+            `);
+		} else {
+			res.status(404).send('Users not found');
+		}
+	} catch (error) {
+		console.error(error);
+		res.status(500).send('Error retrieving users');
+	}
+});
+
+app.listen(3000, () => console.log('Server ready on port 3000.'));
+
+module.exports = app;
