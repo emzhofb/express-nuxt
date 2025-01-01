@@ -55,7 +55,7 @@ export default {
       await this.$store.dispatch('file/fetchFiles');
     },
     goToFile(filepath) {
-      const url = `${process.env.SERVER_HOST || 'https://express-nuxt-production-34c3.up.railway.app'}${filepath.path}`;
+      const url = `${process.env.VUE_APP_SERVER_HOST || 'https://express-nuxt-production-34c3.up.railway.app'}${filepath.path}`;
       window.open(url, '_blank');
     },
     async deleteFile(file, event) {
