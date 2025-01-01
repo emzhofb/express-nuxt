@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import fs from 'fs';
+import path from 'path';
 import File from '../models/file.model';
 
 export const uploadFile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -8,10 +9,10 @@ export const uploadFile = async (req: Request, res: Response, next: NextFunction
       res.status(400).json({ error: 'No file uploaded.' });
       return;
     }
-
+    const uploadedFilePath = path.join('/uploads', path.basename(req.file.path));
     const newFile = await File.create({
       filename: req.file.filename,
-      path: req.file.path,
+      path: uploadedFilePath,
     });
     
     // OWASP: Log file upload success (a logging system can be added here for production)
