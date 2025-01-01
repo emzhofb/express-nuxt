@@ -32,6 +32,10 @@ if (!fs.existsSync(uploadsDir)) {
 // Serve static files from the "uploads" directory
 app.use('/uploads', express.static(uploadsDir)); // This line allows you to access files in the uploads directory
 
+app.get('/', (req, res) => {
+  res.send('Hello, World!');
+})
+
 // Import and use routes
 app.use(uploadRoutes);
 
