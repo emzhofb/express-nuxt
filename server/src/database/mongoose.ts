@@ -10,7 +10,7 @@ export const connectToMongoDB = async () => {
       dbName: process.env.MONGO_DATABASE,
     });
 
-    console.log(`Database "${mongoURI}" connected successfully.`);
+    console.log(`Database connected successfully.`);
   } catch (error) {
     console.error("Error connecting database:", error);
   }
