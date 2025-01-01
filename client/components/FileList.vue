@@ -35,7 +35,7 @@ export default {
       }
     },
     goToFile(filepath) {
-      const url = `${process.env.SERVER_HOST || 'http://localhost:5000'}${filepath}`;
+      const url = `${process.env.SERVER_HOST || 'https://express-nuxt-production.up.railway.app/'}${filepath}`;
       // Open the file in a new tab
       window.open(url, '_blank');
     },
