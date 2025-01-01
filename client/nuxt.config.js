@@ -42,7 +42,7 @@ export default {
   ],
 
   axios: {
-    baseURL: process.env.SERVER_HOST || 'http://localhost:5000', // Set API base URL
+    baseURL: process.env.SERVER_HOST || 'https://express-nuxt-production-34c3.up.railway.app', // Set API base URL
     credentials: false, // Send cookies with requests
     proxy: false, // Use proxy module (set true if needed)
     retry: { retries: 3 }, // Automatic retries on failed requests
