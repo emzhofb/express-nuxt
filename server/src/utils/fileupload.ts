@@ -3,19 +3,16 @@ import path from 'path';
 
 // Initialize upload directory
 const uploadsDir = path.resolve(__dirname, '../uploads');
-const delimiter = ' :v-|-:v ';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    // Generate the filename: original name + timestamp (or ID) to avoid collisions
-    const originalNameWithoutExt = path.parse(file.originalname).name; // Get the original filename without the extension
-    const fileId = Date.now(); // Or generate a random ID, e.g., `Math.random().toString(36).substring(7)`
-    const extension = path.extname(file.originalname); // Get the file extension
-    const newFileName = `${originalNameWithoutExt}${delimiter}${fileId}${extension}`; // Combine original name and ID
-    cb(null, newFileName);
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    const baseName = path.basename(file.originalname, ext);
+    cb(null, `${baseName}-${timestamp}${ext}`);
   },
 });
 

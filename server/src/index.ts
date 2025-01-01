@@ -1,13 +1,22 @@
+import dotenv from "dotenv";
+
+// load config from .env
+dotenv.config({ path: "./src/.env" });
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet'; // Helmet for setting security-related HTTP headers
 import path from 'path';
 import fs from 'fs';
 import uploadRoutes from './routes/upload.routes';
+import { connectToMongoDB } from './database/mongoose';
+
+// initialize database
+connectToMongoDB();
 
 // Initialize Express app
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 // Enable CORS for frontend communication
 app.use(cors());
