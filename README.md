@@ -11,7 +11,7 @@ npm run dev
 
 server
 
-please make the .env file under folder server
+please make the .env file under folder
 /server/.env
 
 ```
