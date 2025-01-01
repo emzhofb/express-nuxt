@@ -57,10 +57,21 @@ export const deleteFile = async (req: Request, res: Response, next: NextFunction
       return;
     }
 
-    fs.unlinkSync(file.path); // Delete file from filesystem
+   // Assuming files are stored in 'server/src/uploads/'
+    const uploadsDirectory = path.resolve(__dirname, '..'); // Adjust this path to where your files are stored
 
-    // OWASP: Log file deletion success (a logging system can be added here for production)
-    console.log(`file deleted: ${file?.filename}`);
+    // Remove the leading slash from the file path, if it exists
+    const relativePath = file.path.replace(/^\/+/, ''); // Remove leading slash
+    const filePath = path.join(uploadsDirectory, relativePath);
+
+    try {
+      fs.unlinkSync(filePath); // Delete the file from the filesystem
+
+      // OWASP: Log file deletion success (a logging system can be added here for production)
+      console.log(`file deleted: ${file?.filename}`);
+    } catch (error) {
+      console.error('Error deleting file:', error);
+    }
 
     res.status(200).json({ message: 'file deleted successfully.' });
   } catch (error) {

@@ -18,6 +18,9 @@
         @click:row="goToFile"
         class="elevation-1"
       >
+        <template v-slot:item.actions="{ item }">
+          <v-icon @click="deleteFile(item, $event)" class="mr-2" color="red">mdi-delete</v-icon>
+        </template>
       </v-data-table>
     </template>
 
@@ -39,6 +42,7 @@ export default {
     return {
       headers: [
         { text: 'File Name', align: 'start', sortable: true, value: 'filename' },
+        { text: 'Actions', value: 'actions', sortable: false },
       ],
       search: '',
     };
@@ -53,6 +57,18 @@ export default {
     goToFile(filepath) {
       const url = `${process.env.SERVER_HOST || 'http://localhost:5000'}${filepath.path}`;
       window.open(url, '_blank');
+    },
+    async deleteFile(file, event) {
+      event.stopPropagation();
+      const confirmDelete = confirm(`Are you sure you want to delete ${file.filename}?`);
+      if (confirmDelete) {
+        try {
+          await this.$store.dispatch('file/deleteFile', file);
+          this.fetchFiles(); // Refresh the file list after deletion
+        } catch (error) {
+          console.error('Error deleting file:', error);
+        }
+      }
     },
   },
 };

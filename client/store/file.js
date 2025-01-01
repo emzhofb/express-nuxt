@@ -10,6 +10,9 @@ export const mutations = {
   setLoading(state, loading) {
     state.loading = loading;
   },
+  removeFile(state, fileId) {
+    state.files = state.files.filter(file => file.id !== fileId);
+  },
 };
 
 export const actions = {
@@ -24,6 +27,16 @@ export const actions = {
       console.error('Error fetching files:', error);
     } finally {
       commit('setLoading', false);
+    }
+  },
+  async deleteFile({ commit }, file) {
+    try {
+      const response = await this.$axios.delete(`/files/${file._id}`);
+      if (response.status === 200) {
+        commit('removeFile', file.id);
+      }
+    } catch (error) {
+      console.error('Error deleting file:', error);
     }
   },
 };
